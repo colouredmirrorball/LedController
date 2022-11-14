@@ -25,6 +25,11 @@
             <artifactId>javaosc-core</artifactId>
             <version>0.9-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>ch.bildspur</groupId>
+            <artifactId>artnet4j</artifactId>
+            <version>0.6.2</version>
+        </dependency>
 
     </dependencies>
 
