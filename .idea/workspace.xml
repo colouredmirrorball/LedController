@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="Listen to Art-Net">
+    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="RGBW output">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/output/ArtNetOutput.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/output/ArtNetOutput.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +90,7 @@
       <option name="presentableId" value="Default" />
       <updated>1668466029774</updated>
       <workItem from="1668466030988" duration="4211000" />
-      <workItem from="1668554177544" duration="820000" />
+      <workItem from="1668554177544" duration="2121000" />
     </task>
     <task id="LOCAL-00001" summary="Bump to Java 18 and get rid of vulnerable dependencies&#10;&#10;Minor code cleanups">
       <created>1668467696057</created>
@@ -121,7 +120,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668468422669</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="RGBW output">
+      <created>1668555404609</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1668555404609</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,7 +152,8 @@
     <MESSAGE value="Fix NPE in OSCPortIn" />
     <MESSAGE value="Initial project" />
     <MESSAGE value="Listen to Art-Net" />
-    <option name="LAST_COMMIT_MESSAGE" value="Listen to Art-Net" />
+    <MESSAGE value="RGBW output" />
+    <option name="LAST_COMMIT_MESSAGE" value="RGBW output" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />

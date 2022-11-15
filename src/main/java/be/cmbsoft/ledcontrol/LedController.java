@@ -97,7 +97,7 @@ public class LedController extends PApplet implements OSCMessageListener {
                 output[index++] = (byte) (((int) green(c)) & 0xff);
                 output[index++] = (byte) (((int) blue(c)) & 0xff);
                 float saturation = saturation(c);
-                output[index++] = saturation < 25 ? (byte) (((int) (255 - 25 * saturation)) & 0xff) : 0;
+                output[index++] = saturation < 25 ? (byte) (((int) (255 - 10 * saturation)) & 0xff) : 0;
             }
         }
         return output;
