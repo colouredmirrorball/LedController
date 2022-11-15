@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="Initial project" />
+    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="Listen to Art-Net">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/output/ArtNetOutput.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/output/ArtNetOutput.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,6 +28,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="5" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -52,7 +59,7 @@
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices"
+    "settings.editor.selected.configurable": "preferences.sourceCode.Java"
   }
 }]]></component>
   <component name="RunManager">
@@ -83,7 +90,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1668466029774</updated>
-      <workItem from="1668466030988" duration="1721000" />
+      <workItem from="1668466030988" duration="4211000" />
+      <workItem from="1668554177544" duration="820000" />
     </task>
     <task id="LOCAL-00001" summary="Bump to Java 18 and get rid of vulnerable dependencies&#10;&#10;Minor code cleanups">
       <created>1668467696057</created>
@@ -106,7 +114,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668467752113</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Listen to Art-Net">
+      <created>1668468422669</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1668468422669</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -117,7 +132,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="SHOW_ROOT_NAMES" value="true" />
+            </State>
           </value>
         </entry>
       </map>
@@ -128,7 +145,8 @@
     <MESSAGE value="Bump to Java 18 and get rid of vulnerable dependencies&#10;&#10;Minor code cleanups" />
     <MESSAGE value="Fix NPE in OSCPortIn" />
     <MESSAGE value="Initial project" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial project" />
+    <MESSAGE value="Listen to Art-Net" />
+    <option name="LAST_COMMIT_MESSAGE" value="Listen to Art-Net" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
