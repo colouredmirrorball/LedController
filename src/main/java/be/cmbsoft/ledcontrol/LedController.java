@@ -1,5 +1,7 @@
 package be.cmbsoft.ledcontrol;
 
+import be.cmbsoft.ledcontrol.input.Input;
+import be.cmbsoft.ledcontrol.input.ScreenGrabber;
 import be.cmbsoft.ledcontrol.output.ArtNetOutput;
 import ch.bildspur.artnet.ArtNetClient;
 import com.illposed.osc.MessageSelector;
@@ -24,6 +26,7 @@ public class LedController extends PApplet implements OSCMessageListener {
     private final Properties properties = new Properties();
     private final List<ArtNetOutput> outputs = new ArrayList<>();
     private PGraphics matrix;
+    private final Input input;
 
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
@@ -54,6 +57,8 @@ public class LedController extends PApplet implements OSCMessageListener {
         for (int i = 0; i < 16; i++) {
             outputs.add(new ArtNetOutput(remoteIp, remotePort, i, 0, i, 0, 1, 120));
         }
+
+        input = new ScreenGrabber();
     }
 
     public static void main(String[] args) {
@@ -62,7 +67,7 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void settings() {
-        size(1200, 800);
+        size(120, 16);
     }
 
     @Override
@@ -74,9 +79,12 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void draw() {
-        matrix.fill(255);
+        matrix.beginDraw();
+        input.drawGraphics(matrix, this);
+        matrix.endDraw();
 
         matrix.loadPixels();
+        image(matrix, 0, 0, width, height);
         processOutputs();
     }
 
