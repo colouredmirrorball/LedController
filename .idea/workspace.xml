@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="RGBW output">
-      <change afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/Input.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/ScreenGrabber.java" afterDir="false" />
+    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/ScreenGrabber.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/ScreenGrabber.java" afterDir="false" />
+    </list>
+    <list id="648220af-c999-44b1-98ed-b928b4d8ba40" name="rommel" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,17 +27,28 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="CMB &lt;colouredmirrorball@users.noreply.github.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitToolBoxStore">
     <option name="projectConfigVersion" value="5" />
+  </component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="b3cba79b-cb7f-4e5f-941d-419845d350bb" />
+        <option name="url" value="https://github.com/colouredmirrorball/LedController.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -90,13 +104,16 @@
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="" />
+      <changelist id="648220af-c999-44b1-98ed-b928b4d8ba40" name="rommel" comment="" />
       <created>1668466029774</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1668466029774</updated>
       <workItem from="1668466030988" duration="4211000" />
       <workItem from="1668554177544" duration="2121000" />
-      <workItem from="1668706385956" duration="3299000" />
+      <workItem from="1668722667824" duration="304000" />
+      <workItem from="1668723159016" duration="1775000" />
+      <workItem from="1668759667448" duration="825000" />
     </task>
     <task id="LOCAL-00001" summary="Bump to Java 18 and get rid of vulnerable dependencies&#10;&#10;Minor code cleanups">
       <created>1668467696057</created>
@@ -133,7 +150,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668555404609</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Avoid NPE">
+      <created>1668727275024</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1668727275024</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -159,20 +183,10 @@
     <MESSAGE value="Initial project" />
     <MESSAGE value="Listen to Art-Net" />
     <MESSAGE value="RGBW output" />
-    <option name="LAST_COMMIT_MESSAGE" value="RGBW output" />
+    <MESSAGE value="Avoid NPE" />
+    <option name="LAST_COMMIT_MESSAGE" value="Avoid NPE" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/ScreenGrabber.java</url>
-          <line>39</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

@@ -55,7 +55,7 @@ public class LedController extends PApplet implements OSCMessageListener {
         int remotePort = Integer.parseInt(properties.getProperty("remotePort", "6454"));
 
         for (int i = 0; i < 16; i++) {
-            outputs.add(new ArtNetOutput(remoteIp, remotePort, i, 0, i, 0, 1, 120));
+            outputs.add(new ArtNetOutput(remoteIp, remotePort, 0, i, 0, i, 120, 1));
         }
 
         input = new ScreenGrabber();
@@ -67,14 +67,15 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void settings() {
-        size(120, 16);
+        size(1200, 160);
+        noSmooth();
     }
 
     @Override
     public void setup() {
         background(0);
-        matrix = createGraphics(Integer.parseInt(properties.getProperty("width", "16")),
-                Integer.parseInt(properties.getProperty("height", "120")));
+        matrix = createGraphics(Integer.parseInt(properties.getProperty("width", "120")),
+                Integer.parseInt(properties.getProperty("height", "16")));
     }
 
     @Override
@@ -105,7 +106,8 @@ public class LedController extends PApplet implements OSCMessageListener {
                 output[index++] = (byte) (((int) green(c)) & 0xff);
                 output[index++] = (byte) (((int) blue(c)) & 0xff);
                 float saturation = saturation(c);
-                output[index++] = saturation < 25 ? (byte) (((int) (255 - 10 * saturation)) & 0xff) : 0;
+                output[index++] = saturation < 25 ? (byte) (brightness(c) * (((int) (255 - 10 * saturation)) & 0xff))
+                        : 0;
             }
         }
         return output;
