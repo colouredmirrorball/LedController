@@ -3,6 +3,8 @@ package be.cmbsoft.ledcontrol;
 import be.cmbsoft.ledcontrol.input.Input;
 import be.cmbsoft.ledcontrol.input.ScreenGrabber;
 import be.cmbsoft.ledcontrol.output.ArtNetOutput;
+import be.cmbsoft.ledcontrol.output.OutputType;
+import be.cmbsoft.ledcontrol.output.PixelPusherOutput;
 import ch.bildspur.artnet.ArtNetClient;
 import com.illposed.osc.MessageSelector;
 import com.illposed.osc.OSCMessageEvent;
@@ -27,6 +29,8 @@ public class LedController extends PApplet implements OSCMessageListener {
     private final List<ArtNetOutput> outputs = new ArrayList<>();
     private PGraphics matrix;
     private final Input input;
+    private final OutputType outputType = OutputType.PIXELPUSHER;
+    private PixelPusherOutput pixelPusherOutput = null;
 
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
@@ -74,7 +78,7 @@ public class LedController extends PApplet implements OSCMessageListener {
     @Override
     public void setup() {
         background(0);
-        matrix = createGraphics(Integer.parseInt(properties.getProperty("width", "120")),
+        matrix = createGraphics(Integer.parseInt(properties.getProperty("width", "256")),
                 Integer.parseInt(properties.getProperty("height", "16")));
     }
 
@@ -90,6 +94,20 @@ public class LedController extends PApplet implements OSCMessageListener {
     }
 
     private void processOutputs() {
+        switch (outputType) {
+            case ART_NET -> sendToArtNet();
+            case PIXELPUSHER -> sendToPixelPusher();
+        }
+    }
+
+    private void sendToPixelPusher() {
+        if (pixelPusherOutput == null) {
+            pixelPusherOutput = new PixelPusherOutput(this);
+        }
+        pixelPusherOutput.sendPixels((x, y) -> matrix.get(x, y));
+    }
+
+    private void sendToArtNet() {
         for (ArtNetOutput output : outputs) {
             artNetClient.unicastDmx(output.ip(), output.subnet(), output.universe(),
                     getData(output.x(), output.y(), output.width(), output.height()));

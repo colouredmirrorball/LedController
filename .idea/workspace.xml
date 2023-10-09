@@ -4,15 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2be54976-c888-4f6b-a777-01c2faae554c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="6d8a7808-f56e-4533-8ade-d9991ff95d50" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/output/OutputType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/output/PixelPusherOutput.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/lib/PixelPusher.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/lib/nrserial.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/LedController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/ScreenGrabber.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/be/cmbsoft/ledcontrol/input/ScreenGrabber.java" afterDir="false" />
-    </list>
-    <list id="648220af-c999-44b1-98ed-b928b4d8ba40" name="rommel" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
