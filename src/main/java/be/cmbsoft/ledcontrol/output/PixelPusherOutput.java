@@ -9,7 +9,7 @@ import java.util.Observer;
 
 import static processing.core.PApplet.println;
 
-public class PixelPusherOutput {
+public class PixelPusherOutput extends AbstractOutput {
 
     private final LedController ledController;
     DeviceRegistry registry;
@@ -22,34 +22,37 @@ public class PixelPusherOutput {
         this.ledController = ledController;
     }
 
-    public void sendPixels(PixelFetcher fetcher) {
+    @Override
+    public void send(LedController.PixelFetcher fetcher) {
         if (testObserver.hasStrips()) {
             registry.startPushing();
+            registry.setExtraDelay(0);
+            registry.setAutoThrottle(true);
             int currentStrip = 0;
-            int stride = 16;    //TODO make configurable
             for (Strip strip : registry.getStrips()) {
-                for (int index = 0; index < strip.getLength(); index++) {
-                    int xPos = index / stride + stride * currentStrip;
-                    boolean odd = xPos % 2 == 1;
-                    int yPos = odd ? stride - index % stride : index % stride;
-                    int pixel = fetcher.getPixel(xPos, yPos);
-                    int corrected = ledController.color(ledController.red(pixel), ledController.blue(pixel),
-                            ledController.green(pixel));
+                byte[] data = fetcher.getData(0, currentStrip, strip.getLength(), 1);
+                int max = Math.min(data.length / 3, strip.getLength());
+                for (int index = 0; index < max; index++) {
+//                    int xPos = index / stride + stride * currentStrip;
+//                    boolean odd = xPos % 2 == 1;
+//                    int yPos = odd ? stride - index % stride : index % stride;
+//                    int pixel = fetcher.getData(xPos, yPos);
+//                    int corrected = ledController.color(ledController.red(pixel), ledController.blue(pixel),
+//                            ledController.green(pixel));
+                    int corrected = ledController.color(ledController.red(data[index * 3]),
+                            ledController.blue(data[index * 3 + 1]), ledController.green(data[index * 3 + 2]));
                     strip.setPixel(corrected, index);
                 }
                 currentStrip++;
             }
+            //registry.stopPushing();
         }
-    }
-
-    @FunctionalInterface
-    public interface PixelFetcher {
-        int getPixel(int x, int y);
     }
 
     static class TestObserver implements Observer {
         private boolean hasStrips = false;
 
+        @Override
         public void update(Observable registry, Object updatedDevice) {
             println("Registry changed!");
             if (updatedDevice != null) {
