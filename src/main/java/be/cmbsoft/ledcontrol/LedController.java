@@ -1,7 +1,9 @@
 package be.cmbsoft.ledcontrol;
 
+import be.cmbsoft.ledcontrol.input.Blackout;
 import be.cmbsoft.ledcontrol.input.Input;
 import be.cmbsoft.ledcontrol.input.ScreenGrabber;
+import be.cmbsoft.ledcontrol.input.StaticColour;
 import be.cmbsoft.ledcontrol.output.AbstractOutput;
 import be.cmbsoft.ledcontrol.output.ArtNetOutput;
 import be.cmbsoft.ledcontrol.output.OutputType;
@@ -17,23 +19,24 @@ import processing.core.PGraphics;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class LedController extends PApplet implements OSCMessageListener {
 
     public static final String WIDTH_KEY = "width";
     public static final String HEIGHT_KEY = "height";
-    private static final OutputType outputType = OutputType.PIXELPUSHER;
+    private static final OutputType outputType = OutputType.ART_NET;
     private final Properties properties = new Properties();
     private final List<AbstractOutput> outputs = new ArrayList<>();
     private final int stride;
     private final int outputWidth;
-    private PGraphics matrix;
     private final int outputHeight;
     private final OSCPortIn port;
-    private Input input;
+    int lastSaturation = 0;
+    private PGraphics matrix;
+    private Map<Character, Input> inputs;
+    private Input activeInput;
+    //private PixelPusherOutput pixelPusherOutput = null;
 
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
@@ -59,7 +62,6 @@ public class LedController extends PApplet implements OSCMessageListener {
             throw new RuntimeException(e);
         }
     }
-    //private PixelPusherOutput pixelPusherOutput = null;
 
     public static void main(String[] args) {
         runSketch(new String[]{LedController.class.getPackageName()}, new LedController());
@@ -88,7 +90,11 @@ public class LedController extends PApplet implements OSCMessageListener {
             setupArtNetOutput();
         }
 
-        input = new ScreenGrabber();
+        inputs = new HashMap<>();
+        inputs.put('s', new ScreenGrabber());
+        inputs.put('c', new StaticColour());
+        inputs.put('b', new Blackout());
+        activeInput = inputs.get('b');
         background(0);
         matrix = createGraphics(Integer.parseInt(properties.getProperty(WIDTH_KEY, "256")),
                 parseOutputHeight());
@@ -110,16 +116,27 @@ public class LedController extends PApplet implements OSCMessageListener {
     @Override
     public void draw() {
         matrix.beginDraw();
-        input.drawGraphics(matrix, this);
+        activeInput.drawGraphics(matrix, this);
         matrix.endDraw();
 
         matrix.loadPixels();
         image(matrix, 0, 0, width, height);
         processOutputs();
-        fill(0);
-        rect(5, 5, 50, 25);
-        fill(255);
-        text("FPS: " + (int) frameRate, 10, 25);
+//        fill(0);
+//        rect(5, 5, 50, 25);
+//        fill(255);
+//        text("FPS: " + (int) frameRate, 10, 25);
+//        fill(0);
+//        rect(5, 25, 50, 25);
+//        fill(255);
+//        text("sat: " + (int) lastSaturation, 10, 45);
+    }
+
+    @Override
+    public void keyPressed() {
+        if (inputs.containsKey(key)) {
+            activeInput = inputs.get(key);
+        }
     }
 
     private void processOutputs() {
@@ -153,10 +170,12 @@ public class LedController extends PApplet implements OSCMessageListener {
                 int max = Math.max(r, Math.max(g, b));
                 int min = Math.min(r, Math.min(g, b));
                 float saturation = max == 0 ? 0f : (max - min) * 255f / max;
-
-                output[index++] = saturation < 25f
-                        ? (byte) (max * (((int) (255f - 10f * saturation)) & 0xFF))
+                int calculatedSaturation = saturation < 25f
+                        ? Math.min(255, max * (((int) (255f - 10f * saturation)) & 0xFF) / 255)
                         : 0;
+
+                output[index++] = (byte) calculatedSaturation;
+                lastSaturation = calculatedSaturation;
             }
         }
         return output;
