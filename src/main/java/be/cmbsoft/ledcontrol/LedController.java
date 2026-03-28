@@ -6,8 +6,9 @@ import be.cmbsoft.ledcontrol.input.ScreenGrabber;
 import be.cmbsoft.ledcontrol.input.StaticColour;
 import be.cmbsoft.ledcontrol.output.AbstractOutput;
 import be.cmbsoft.ledcontrol.output.ArtNetOutput;
-import be.cmbsoft.ledcontrol.output.OutputType;
-import be.cmbsoft.ledcontrol.output.PixelPusherOutput;
+import be.cmbsoft.ledcontrol.output.LedStrip;
+import be.cmbsoft.ledcontrol.output.LedStripConfig;
+import be.cmbsoft.ledcontrol.ui.StripConfigPanel;
 import com.illposed.osc.MessageSelector;
 import com.illposed.osc.OSCMessageEvent;
 import com.illposed.osc.OSCMessageListener;
@@ -16,6 +17,8 @@ import com.illposed.osc.transport.OSCPortInBuilder;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
+import javax.swing.*;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,18 +28,21 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     public static final String WIDTH_KEY = "width";
     public static final String HEIGHT_KEY = "height";
-    private static final OutputType outputType = OutputType.ART_NET;
+
+    private static final String STRIP_CONFIG_PATH = "src/main/resources/strips.json";
+
     private final Properties properties = new Properties();
     private final List<AbstractOutput> outputs = new ArrayList<>();
-    private final int stride;
     private final int outputWidth;
     private final int outputHeight;
     private final OSCPortIn port;
-    int lastSaturation = 0;
+    private final LedStripConfig stripConfig;
+
     private PGraphics matrix;
     private Map<Character, Input> inputs;
     private Input activeInput;
-    //private PixelPusherOutput pixelPusherOutput = null;
+    private StripConfigPanel configPanel;
+    private boolean editMode;
 
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
@@ -53,14 +59,16 @@ public class LedController extends PApplet implements OSCMessageListener {
                     return true;
                 }
             };
-            port = new OSCPortInBuilder().setLocalPort(Integer.parseInt(properties.getProperty("OscPort", "5142")))
-                    .addMessageListener(selector, this).build();
-            stride = Integer.parseInt(properties.getProperty("stride", "10"));
+            port = new OSCPortInBuilder()
+                    .setLocalPort(Integer.parseInt(properties.getProperty("OscPort", "5142")))
+                    .addMessageListener(selector, this)
+                    .build();
             outputWidth = parseOutputWidth();
             outputHeight = parseOutputHeight();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        stripConfig = new LedStripConfig(new File(STRIP_CONFIG_PATH));
     }
 
     public static void main(String[] args) {
@@ -69,7 +77,7 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void settings() {
-        size(outputWidth * 10, outputHeight * 10);
+        size(outputWidth, outputHeight);
         noSmooth();
     }
 
@@ -83,12 +91,18 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void setup() {
+        // Build outputs from persisted strip config
+        rebuildOutputs(stripConfig.load());
 
-        if (outputType == OutputType.PIXELPUSHER) {
-            setupPixelPusherOutput();
-        } else if (outputType == OutputType.ART_NET) {
-            setupArtNetOutput();
-        }
+        // Open the strip configuration panel (on the Swing EDT)
+        SwingUtilities.invokeLater(() -> {
+            configPanel = new StripConfigPanel(stripConfig);
+            configPanel.setOnStripsChanged(strips -> {
+                stripConfig.save(strips);
+                rebuildOutputs(strips);
+            });
+            configPanel.setVisible(true);
+        });
 
         inputs = new HashMap<>();
         inputs.put('s', new ScreenGrabber());
@@ -96,21 +110,18 @@ public class LedController extends PApplet implements OSCMessageListener {
         inputs.put('b', new Blackout());
         activeInput = inputs.get('b');
         background(0);
-        matrix = createGraphics(Integer.parseInt(properties.getProperty(WIDTH_KEY, "256")),
-                parseOutputHeight());
+        matrix = createGraphics(parseOutputWidth(), parseOutputHeight());
     }
 
-    private void setupPixelPusherOutput() {
-        outputs.add(new PixelPusherOutput(this));
-    }
-
-    private void setupArtNetOutput() {
-        String remoteIp = properties.getProperty("remoteIp", "127.0.0.1");
-        int remotePort = Integer.parseInt(properties.getProperty("remotePort", "6454"));
-
-        for (int i = 0; i < 16; i++) {
-            outputs.add(new ArtNetOutput(remoteIp, remotePort, 0, i, 0, i, 120, 1));
+    /**
+     * Replaces the current outputs with fresh {@link ArtNetOutput} instances.
+     */
+    private synchronized void rebuildOutputs(List<LedStrip> strips) {
+        outputs.clear();
+        for (LedStrip strip : strips) {
+            outputs.add(new ArtNetOutput(strip));
         }
+        println("Outputs rebuilt: " + outputs.size() + " strip(s).");
     }
 
     @Override
@@ -121,63 +132,105 @@ public class LedController extends PApplet implements OSCMessageListener {
 
         matrix.loadPixels();
         image(matrix, 0, 0, width, height);
+
+        if (editMode) {
+            // Show strip overlays on the canvas
+            drawStripOverlays();
+        }
+
         processOutputs();
-//        fill(0);
-//        rect(5, 5, 50, 25);
-//        fill(255);
-//        text("FPS: " + (int) frameRate, 10, 25);
-//        fill(0);
-//        rect(5, 25, 50, 25);
-//        fill(255);
-//        text("sat: " + (int) lastSaturation, 10, 45);
+    }
+
+    /**
+     * Draws a visual overlay for each strip so the user can see their positions.
+     */
+    private void drawStripOverlays() {
+        List<LedStrip> strips = configPanel.getStrips();
+        for (LedStrip strip : strips) {
+            double angleRad = Math.toRadians(strip.getAngleDegrees());
+            double cosA = Math.cos(angleRad);
+            double sinA = Math.sin(angleRad);
+            double spacing = strip.getLedSpacingPixels();
+            // Scale from matrix coords to screen coords
+            float scaleX = (float) width / outputWidth;
+            float scaleY = (float) height / outputHeight;
+
+            stroke(255, 255, 0);
+            strokeWeight(1);
+            noFill();
+            for (int i = 0; i < strip.getLedCount(); i++) {
+                float sx = (float) (strip.getStartX() + cosA * spacing * i) * scaleX;
+                float sy = (float) (strip.getStartY() + sinA * spacing * i) * scaleY;
+                ellipse(sx, sy, 4, 4);
+            }
+        }
     }
 
     @Override
     public void keyPressed() {
-        if (inputs.containsKey(key)) {
+        if (key == 'e' || key == 'E') {
+            editMode = !editMode;
+            // Toggle strip config window
+            SwingUtilities.invokeLater(() -> {
+                if (configPanel != null) {
+                    configPanel.setVisible(editMode);
+                }
+            });
+        } else if (inputs.containsKey(key)) {
             activeInput = inputs.get(key);
         }
     }
 
-    private void processOutputs() {
+    private synchronized void processOutputs() {
         for (AbstractOutput output : outputs) {
-            output.send(this::getReshuffledBytes);
+            output.send(this::getPixel);
         }
     }
 
-    private byte[] getReshuffledBytes(int x, int y, int width, int height) {
-        byte[] output = new byte[512];
-        int index = 0;
-        width = min(width, outputWidth);
-        for (int i = x, endX = x + width, endY = y + height, matrixWidth = matrix.width; i < endX; i++) {
-            int pixelIndex = y * matrixWidth + i;
-            for (int j = y; j < endY; j++, pixelIndex += matrixWidth) {
-                if (index >= 508) {
-                    println("Error: index out of bounds avoided!");
-                    println("index", index, "x", x, "y", y, WIDTH_KEY, width, HEIGHT_KEY, height);
-                    break;
-                }
-                int c = matrix.pixels[pixelIndex];
+    /**
+     * Returns the RGB (and optional white) bytes for a region of the matrix.
+     *
+     * <p>When {@code width == 1 && height == 1} (single-LED lookup) this method
+     * returns exactly 3 bytes: {@code [R, G, B]}.  For larger regions it falls
+     * back to the legacy DMX-packed layout.
+     */
+//    private byte[] getPixelRgb(int x, int y, int w, int h) {
+//        if (w == 1 && h == 1) {
+//            // Fast single-pixel path used by ArtNetOutput strip sampling
+//            int px = x + y * matrix.width;
+//            if (px < 0 || px >= matrix.pixels.length) return new byte[3];
+//            int c = matrix.pixels[px];
+//            return new byte[]{
+//                (byte) ((c >>> 16) & 0xFF),
+//                (byte) ((c >>>  8) & 0xFF),
+//                (byte) ( c        & 0xFF)
+//            };
+//        }
+//        return getReshuffledBytes(x, y, w, h);
+//    }
+    public byte[] getPixel(int x, int y) {
+        byte[] output = new byte[4];
+        int pixelIndex = x + y * matrix.width;
 
-                int r = (c >>> 16) & 0xFF;
-                int g = (c >>> 8) & 0xFF;
-                int b = c & 0xFF;
+        int c = matrix.pixels[pixelIndex];
 
-                output[index++] = (byte) r;
-                output[index++] = (byte) g;
-                output[index++] = (byte) b;
+        int r = (c >>> 16) & 0xFF;
+        int g = (c >>> 8) & 0xFF;
+        int b = c & 0xFF;
 
-                int max = Math.max(r, Math.max(g, b));
-                int min = Math.min(r, Math.min(g, b));
-                float saturation = max == 0 ? 0f : (max - min) * 255f / max;
-                int calculatedSaturation = saturation < 25f
-                        ? Math.min(255, max * (((int) (255f - 10f * saturation)) & 0xFF) / 255)
-                        : 0;
+        output[0] = (byte) r;
+        output[1] = (byte) g;
+        output[2] = (byte) b;
 
-                output[index++] = (byte) calculatedSaturation;
-                lastSaturation = calculatedSaturation;
-            }
-        }
+        int max = Math.max(r, Math.max(g, b));
+        int min = Math.min(r, Math.min(g, b));
+        float saturation = max == 0 ? 0f : (max - min) * 255f / max;
+        int calculatedSaturation = saturation < 25f
+                ? Math.min(255, max * (((int) (255f - 10f * saturation)) & 0xFF) / 255)
+                : 0;
+
+        output[3] = (byte) calculatedSaturation;
+
         return output;
     }
 
@@ -186,12 +239,8 @@ public class LedController extends PApplet implements OSCMessageListener {
         System.out.println(oscMessageEvent.getMessage());
     }
 
-    public int getStride() {
-        return stride;
-    }
-
     @FunctionalInterface
     public interface PixelFetcher {
-        byte[] getData(int x, int y, int width, int height);
+        byte[] getData(int x, int y);
     }
 }

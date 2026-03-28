@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Strip",
+    "startX": 40.0,
+    "startY": 40.0,
+    "angleDegrees": 0.0,
+    "ledCount": 120,
+    "ledSpacingPixels": 10.0,
+    "remoteIp": "10.0.95.116",
+    "remotePort": 6454,
+    "subnet": 0,
+    "universe": 0
+  },
+  {
+    "name": "Strip 2",
+    "startX": 40.0,
+    "startY": 80.0,
+    "angleDegrees": 0.0,
+    "ledCount": 120,
+    "ledSpacingPixels": 5.0,
+    "remoteIp": "10.0.95.116",
+    "remotePort": 6454,
+    "subnet": 0,
+    "universe": 1
+  }
+]

@@ -30,22 +30,8 @@ public class PixelPusherOutput extends AbstractOutput {
             registry.setAutoThrottle(true);
             int currentStrip = 0;
             for (Strip strip : registry.getStrips()) {
-                byte[] data = fetcher.getData(0, currentStrip, strip.getLength(), 1);
-                int max = Math.min(data.length / 3, strip.getLength());
-                for (int index = 0; index < max; index++) {
-//                    int xPos = index / stride + stride * currentStrip;
-//                    boolean odd = xPos % 2 == 1;
-//                    int yPos = odd ? stride - index % stride : index % stride;
-//                    int pixel = fetcher.getData(xPos, yPos);
-//                    int corrected = ledController.color(ledController.red(pixel), ledController.blue(pixel),
-//                            ledController.green(pixel));
-                    int corrected = ledController.color(ledController.red(data[index * 3]),
-                            ledController.blue(data[index * 3 + 1]), ledController.green(data[index * 3 + 2]));
-                    strip.setPixel(corrected, index);
-                }
-                currentStrip++;
+                //TODO: fix
             }
-            //registry.stopPushing();
         }
     }
 
