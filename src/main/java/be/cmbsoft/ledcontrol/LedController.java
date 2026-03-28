@@ -10,6 +10,7 @@ import be.cmbsoft.ledcontrol.output.LedStrip;
 import be.cmbsoft.ledcontrol.output.LedStripConfig;
 import be.cmbsoft.ledcontrol.ui.StripConfigPanel;
 import com.illposed.osc.MessageSelector;
+import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCMessageEvent;
 import com.illposed.osc.OSCMessageListener;
 import com.illposed.osc.transport.OSCPortIn;
@@ -43,6 +44,7 @@ public class LedController extends PApplet implements OSCMessageListener {
     private Input activeInput;
     private StripConfigPanel configPanel;
     private boolean editMode;
+    private float intensity = 1f;
 
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
@@ -63,6 +65,7 @@ public class LedController extends PApplet implements OSCMessageListener {
                     .setLocalPort(Integer.parseInt(properties.getProperty("OscPort", "5142")))
                     .addMessageListener(selector, this)
                     .build();
+            port.startListening();
             outputWidth = parseOutputWidth();
             outputHeight = parseOutputHeight();
         } catch (IOException e) {
@@ -187,27 +190,6 @@ public class LedController extends PApplet implements OSCMessageListener {
         }
     }
 
-    /**
-     * Returns the RGB (and optional white) bytes for a region of the matrix.
-     *
-     * <p>When {@code width == 1 && height == 1} (single-LED lookup) this method
-     * returns exactly 3 bytes: {@code [R, G, B]}.  For larger regions it falls
-     * back to the legacy DMX-packed layout.
-     */
-//    private byte[] getPixelRgb(int x, int y, int w, int h) {
-//        if (w == 1 && h == 1) {
-//            // Fast single-pixel path used by ArtNetOutput strip sampling
-//            int px = x + y * matrix.width;
-//            if (px < 0 || px >= matrix.pixels.length) return new byte[3];
-//            int c = matrix.pixels[px];
-//            return new byte[]{
-//                (byte) ((c >>> 16) & 0xFF),
-//                (byte) ((c >>>  8) & 0xFF),
-//                (byte) ( c        & 0xFF)
-//            };
-//        }
-//        return getReshuffledBytes(x, y, w, h);
-//    }
     public byte[] getPixel(int x, int y) {
         byte[] output = new byte[4];
         int pixelIndex = x + y * matrix.width;
@@ -218,9 +200,9 @@ public class LedController extends PApplet implements OSCMessageListener {
         int g = (c >>> 8) & 0xFF;
         int b = c & 0xFF;
 
-        output[0] = (byte) r;
-        output[1] = (byte) g;
-        output[2] = (byte) b;
+        output[0] = (byte) (r * intensity);
+        output[1] = (byte) (g * intensity);
+        output[2] = (byte) (b * intensity);
 
         int max = Math.max(r, Math.max(g, b));
         int min = Math.min(r, Math.min(g, b));
@@ -229,14 +211,31 @@ public class LedController extends PApplet implements OSCMessageListener {
                 ? Math.min(255, max * (((int) (255f - 10f * saturation)) & 0xFF) / 255)
                 : 0;
 
-        output[3] = (byte) calculatedSaturation;
+        output[3] = (byte) (calculatedSaturation * intensity);
 
         return output;
     }
 
     @Override
     public void acceptMessage(OSCMessageEvent oscMessageEvent) {
-        System.out.println(oscMessageEvent.getMessage());
+        OSCMessage message = oscMessageEvent.getMessage();
+        String address = message.getAddress();
+        CharSequence argumentTypeTags = message.isInfoSet() ? message.getInfo().getArgumentTypeTags() : "";
+
+        switch (address) {
+            case "/led/fader/Intensity":
+                if (argumentTypeTags.charAt(0) == 'f') {
+                    intensity = (Float) message.getArguments().get(0);
+                }
+        }
+    }
+
+    @Override
+    public void exit() {
+        if (port != null) {
+            port.stopListening();
+        }
+        super.exit();
     }
 
     @FunctionalInterface

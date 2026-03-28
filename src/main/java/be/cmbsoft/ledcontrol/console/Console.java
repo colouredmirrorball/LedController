@@ -44,6 +44,7 @@ public class Console extends PApplet {
 
         initializeLayout();
         initializeOsc();
+        println(oscStatus);
     }
 
     @Override
