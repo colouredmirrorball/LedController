@@ -43,6 +43,23 @@ public class LedController extends PApplet implements OSCMessageListener {
     private boolean editMode;
     private float intensity = 1f;
 
+    /**
+     * Half-size of the draggable handle rectangles in screen pixels.
+     */
+    private static final int HANDLE_HALF = 6;
+    private final int canvasX = 50;
+
+    // ---- edit-mode drag state ----
+    private final int canvasY = 50;
+    /**
+     * Index of the strip whose handle is being dragged, or -1.
+     */
+    private final int dragStripIndex = -1;
+    /**
+     * Which handle: 0 = start, 1 = end.
+     */
+    private final int dragHandle = -1;
+
 
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
@@ -133,7 +150,7 @@ public class LedController extends PApplet implements OSCMessageListener {
         matrix.endDraw();
 
         matrix.loadPixels();
-        image(matrix, 50, 20, outputWidth, outputHeight);
+        image(matrix, canvasX, canvasY, outputWidth, outputHeight);
 
         drawStripOverlays();
         processOutputs();
@@ -144,14 +161,21 @@ public class LedController extends PApplet implements OSCMessageListener {
      */
     private void drawStripOverlays() {
         List<LedStrip> strips = stripConfig.getStrips();
-        for (LedStrip strip : strips) {
+        if (editMode) {
+            strokeWeight(2);
+            stroke(255, 127, 0);
+        } else {
             noStroke();
+        }
+        for (LedStrip strip : strips) {
             for (Pixel pixel : strip.getPixels()) {
                 fill(color(pixel.red(), pixel.green(), pixel.blue()));
-                rect(pixel.x(), pixel.y(), 4, 4);
+                rect(map(pixel.x(), 0, outputWidth, canvasX, canvasX + outputWidth),
+                        map(pixel.y(), 0, outputHeight, canvasY, canvasY + outputHeight), 6, 6);
             }
             if (editMode) {
-                // Show strip overlays on the canvas
+
+
             }
         }
     }
@@ -180,8 +204,7 @@ public class LedController extends PApplet implements OSCMessageListener {
     public byte[] getPixel(int x, int y) {
         byte[] output = new byte[4];
         int pixelIndex = x + y * matrix.width;
-
-        int c = matrix.pixels[pixelIndex];
+        int c = (x <= outputWidth && y <= outputHeight)  ? matrix.pixels[pixelIndex] : 0;
 
         int r = (c >>> 16) & 0xFF;
         int g = (c >>> 8) & 0xFF;

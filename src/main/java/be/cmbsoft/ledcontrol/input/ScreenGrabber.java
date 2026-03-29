@@ -35,8 +35,8 @@ public class ScreenGrabber implements Input {
     public void drawGraphics(PGraphics matrix, LedController ledController) {
         Rectangle locAndSize = WindowUtils.getWindowLocationAndSize(handle);
         // Reduce rectangle size to avoid capturing window borders
-        locAndSize.setSize(locAndSize.width - 10, locAndSize.height - 30);
-        locAndSize.setLocation(locAndSize.x + 5, locAndSize.y + 25);
+        locAndSize.setSize(locAndSize.width - 20, locAndSize.height - 50);
+        locAndSize.setLocation(locAndSize.x + 10, locAndSize.y + 35);
         BufferedImage screenCapture = robot.createScreenCapture(locAndSize);
         if (buffer == null || buffer.width != screenCapture.getWidth() || buffer.height != screenCapture.getHeight()) {
             buffer = ledController.createGraphics(screenCapture.getWidth(), screenCapture.getHeight());
