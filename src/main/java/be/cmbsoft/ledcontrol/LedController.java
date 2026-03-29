@@ -54,11 +54,11 @@ public class LedController extends PApplet implements OSCMessageListener {
     /**
      * Index of the strip whose handle is being dragged, or -1.
      */
-    private final int dragStripIndex = -1;
+    private int dragStripIndex = -1;
     /**
      * Which handle: 0 = start, 1 = end.
      */
-    private final int dragHandle = -1;
+    private int dragHandle = -1;
 
 
     public LedController() {
@@ -157,7 +157,21 @@ public class LedController extends PApplet implements OSCMessageListener {
     }
 
     /**
+     * Computes the canvas-space end position of a strip.
+     * End = start + direction * spacing * (ledCount - 1)
+     */
+    private static double[] stripEndPosition(LedStrip strip) {
+        double angleRad = Math.toRadians(strip.getAngleDegrees());
+        double span = strip.getLedSpacingPixels() * Math.max(strip.getLedCount() - 1, 0);
+        return new double[]{
+                strip.getStartX() + Math.cos(angleRad) * span,
+                strip.getStartY() + Math.sin(angleRad) * span
+        };
+    }
+
+    /**
      * Draws a visual overlay for each strip so the user can see their positions.
+     * In edit mode, also draws draggable start (green) and end (red) handles.
      */
     private void drawStripOverlays() {
         List<LedStrip> strips = stripConfig.getStrips();
@@ -174,9 +188,136 @@ public class LedController extends PApplet implements OSCMessageListener {
                         map(pixel.y(), 0, outputHeight, canvasY, canvasY + outputHeight), 6, 6);
             }
             if (editMode) {
+                // Compute screen-space positions of the start and end handles
+                float sx = stripToScreenX(strip.getStartX());
+                float sy = stripToScreenY(strip.getStartY());
 
+                double[] end = stripEndPosition(strip);
+                float ex = stripToScreenX(end[0]);
+                float ey = stripToScreenY(end[1]);
 
+                // Draw line connecting start to end
+                stroke(255, 200, 0);
+                strokeWeight(1);
+                line(sx, sy, ex, ey);
+
+                // Start handle – green square
+                strokeWeight(2);
+                stroke(0, 220, 0);
+                fill(0, 255, 0, 180);
+                rect(sx - HANDLE_HALF, sy - HANDLE_HALF, (float) HANDLE_HALF * 2, (float) HANDLE_HALF * 2);
+
+                // End handle – red square
+                stroke(220, 0, 0);
+                fill(255, 0, 0, 180);
+                rect(ex - HANDLE_HALF, ey - HANDLE_HALF, (float) HANDLE_HALF * 2, (float) HANDLE_HALF * 2);
             }
+        }
+    }
+
+    /**
+     * Maps a strip canvas X coordinate to a Processing screen X coordinate.
+     */
+    private float stripToScreenX(double canvasCoord) {
+        return map((float) canvasCoord, 0, outputWidth, canvasX, canvasX + (float) outputWidth);
+    }
+
+    /**
+     * Maps a strip canvas Y coordinate to a Processing screen Y coordinate.
+     */
+    private float stripToScreenY(double canvasCoord) {
+        return map((float) canvasCoord, 0, outputHeight, canvasY, canvasY + (float) outputHeight);
+    }
+
+    /**
+     * Maps a Processing screen X to a strip canvas X coordinate.
+     */
+    private double screenToStripX(float screenX) {
+        return map(screenX, canvasX, canvasX + (float) outputWidth, 0, outputWidth);
+    }
+
+    /**
+     * Maps a Processing screen Y to a strip canvas Y coordinate.
+     */
+    private double screenToStripY(float screenY) {
+        return map(screenY, canvasY, canvasY + (float) outputHeight, 0, outputHeight);
+    }
+
+    @Override
+    public void mousePressed() {
+        if (editMode) {
+            List<LedStrip> strips = stripConfig.getStrips();
+            for (int i = 0; i < strips.size(); i++) {
+                LedStrip strip = strips.get(i);
+
+                // Check start handle
+                float sx = stripToScreenX(strip.getStartX());
+                float sy = stripToScreenY(strip.getStartY());
+                if (Math.abs(mouseX - sx) <= HANDLE_HALF && Math.abs(mouseY - sy) <= HANDLE_HALF) {
+                    dragStripIndex = i;
+                    dragHandle = 0;
+                    return;
+                }
+
+                // Check end handle
+                double[] end = stripEndPosition(strip);
+                float ex = stripToScreenX(end[0]);
+                float ey = stripToScreenY(end[1]);
+                if (Math.abs(mouseX - ex) <= HANDLE_HALF && Math.abs(mouseY - ey) <= HANDLE_HALF) {
+                    dragStripIndex = i;
+                    dragHandle = 1;
+                    return;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void mouseDragged() {
+        if (editMode && dragStripIndex >= 0) {
+            LedStrip strip = stripConfig.getStrips().get(dragStripIndex);
+
+            double mx = screenToStripX(mouseX);
+            double my = screenToStripY(mouseY);
+
+            if (dragHandle == 0) {
+                // Moving the start handle – preserve angle & spacing, just translate
+                strip.setStartX(mx);
+                strip.setStartY(my);
+            } else {
+                // Moving the end handle – recompute angle and spacing
+                double dx = mx - strip.getStartX();
+                double dy = my - strip.getStartY();
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                double newAngle = Math.toDegrees(Math.atan2(dy, dx));
+                strip.setAngleDegrees(newAngle);
+                int ledCount = strip.getLedCount();
+                if (ledCount > 1) {
+                    strip.setLedSpacingPixels(dist / (ledCount - 1));
+                }
+            }
+
+            // Refresh pixel positions so the overlay stays in sync
+            strip.getPixels().clear();
+            strip.updatePixelPositions();
+
+            // Keep the Swing table in sync while dragging
+            if (configPanel != null) {
+                SwingUtilities.invokeLater(configPanel::refreshTable);
+            }
+        }
+    }
+
+    @Override
+    public void mouseReleased() {
+        if (dragStripIndex >= 0) {
+            // Persist the updated strip config
+            stripConfig.save();
+            if (configPanel != null) {
+                SwingUtilities.invokeLater(configPanel::refreshTable);
+            }
+            dragStripIndex = -1;
+            dragHandle = -1;
         }
     }
 

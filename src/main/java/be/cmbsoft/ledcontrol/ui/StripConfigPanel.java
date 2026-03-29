@@ -129,6 +129,14 @@ public class StripConfigPanel extends JFrame {
         onStripsChanged.accept(config.getStrips());
     }
 
+    /**
+     * Refreshes the table to reflect any external changes to the strip list
+     * (e.g. positions updated by dragging handles in the Processing canvas).
+     */
+    public void refreshTable() {
+        tableModel.fireTableDataChanged();
+    }
+
     // ---- inner classes ----
 
     /**
