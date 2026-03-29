@@ -4,10 +4,7 @@ import be.cmbsoft.ledcontrol.input.Blackout;
 import be.cmbsoft.ledcontrol.input.Input;
 import be.cmbsoft.ledcontrol.input.ScreenGrabber;
 import be.cmbsoft.ledcontrol.input.StaticColour;
-import be.cmbsoft.ledcontrol.output.AbstractOutput;
-import be.cmbsoft.ledcontrol.output.ArtNetOutput;
-import be.cmbsoft.ledcontrol.output.LedStrip;
-import be.cmbsoft.ledcontrol.output.LedStripConfig;
+import be.cmbsoft.ledcontrol.output.*;
 import be.cmbsoft.ledcontrol.ui.StripConfigPanel;
 import com.illposed.osc.MessageSelector;
 import com.illposed.osc.OSCMessage;
@@ -46,6 +43,7 @@ public class LedController extends PApplet implements OSCMessageListener {
     private boolean editMode;
     private float intensity = 1f;
 
+
     public LedController() {
         try (InputStream propertiesStream = new FileInputStream("src/main/resources/settings.properties")) {
 
@@ -80,7 +78,7 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void settings() {
-        size(outputWidth, outputHeight);
+        size(outputWidth + 600, outputHeight + 200);
         noSmooth();
     }
 
@@ -95,14 +93,14 @@ public class LedController extends PApplet implements OSCMessageListener {
     @Override
     public void setup() {
         // Build outputs from persisted strip config
-        rebuildOutputs(stripConfig.load());
+        rebuildOutputs(stripConfig.reload().getStrips());
 
         // Open the strip configuration panel (on the Swing EDT)
         SwingUtilities.invokeLater(() -> {
             configPanel = new StripConfigPanel(stripConfig);
             configPanel.setOnStripsChanged(strips -> {
-                stripConfig.save(strips);
-                rebuildOutputs(strips);
+                stripConfig.save();
+                rebuildOutputs(stripConfig.getStrips());
             });
             configPanel.setVisible(true);
         });
@@ -129,18 +127,15 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void draw() {
+        background(50);
         matrix.beginDraw();
         activeInput.drawGraphics(matrix, this);
         matrix.endDraw();
 
         matrix.loadPixels();
-        image(matrix, 0, 0, width, height);
+        image(matrix, 50, 20, outputWidth, outputHeight);
 
-        if (editMode) {
-            // Show strip overlays on the canvas
-            drawStripOverlays();
-        }
-
+        drawStripOverlays();
         processOutputs();
     }
 
@@ -148,23 +143,15 @@ public class LedController extends PApplet implements OSCMessageListener {
      * Draws a visual overlay for each strip so the user can see their positions.
      */
     private void drawStripOverlays() {
-        List<LedStrip> strips = configPanel.getStrips();
+        List<LedStrip> strips = stripConfig.getStrips();
         for (LedStrip strip : strips) {
-            double angleRad = Math.toRadians(strip.getAngleDegrees());
-            double cosA = Math.cos(angleRad);
-            double sinA = Math.sin(angleRad);
-            double spacing = strip.getLedSpacingPixels();
-            // Scale from matrix coords to screen coords
-            float scaleX = (float) width / outputWidth;
-            float scaleY = (float) height / outputHeight;
-
-            stroke(255, 255, 0);
-            strokeWeight(1);
-            noFill();
-            for (int i = 0; i < strip.getLedCount(); i++) {
-                float sx = (float) (strip.getStartX() + cosA * spacing * i) * scaleX;
-                float sy = (float) (strip.getStartY() + sinA * spacing * i) * scaleY;
-                ellipse(sx, sy, 4, 4);
+            noStroke();
+            for (Pixel pixel : strip.getPixels()) {
+                fill(color(pixel.red(), pixel.green(), pixel.blue()));
+                rect(pixel.x(), pixel.y(), 4, 4);
+            }
+            if (editMode) {
+                // Show strip overlays on the canvas
             }
         }
     }
@@ -221,6 +208,7 @@ public class LedController extends PApplet implements OSCMessageListener {
         OSCMessage message = oscMessageEvent.getMessage();
         String address = message.getAddress();
         CharSequence argumentTypeTags = message.isInfoSet() ? message.getInfo().getArgumentTypeTags() : "";
+        println("Got OSC message: ", address, argumentTypeTags, message.getArguments());
 
         switch (address) {
             case "/led/fader/Intensity":

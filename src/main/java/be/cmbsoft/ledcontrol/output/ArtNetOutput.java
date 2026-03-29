@@ -23,23 +23,6 @@ public final class ArtNetOutput extends AbstractOutput {
         artNetClient.start();
     }
 
-    /**
-     * Convenience factory that mirrors the original rectangular constructor.
-     */
-    public static ArtNetOutput forRectangle(String ip, int port, int subnet, int universe,
-                                            int x, int y, int width, int height) {
-        LedStrip s = new LedStrip(
-                "universe-" + universe,
-                x, y, 0.0,
-                width * height, 1.0,
-                ip, port, subnet, universe);
-        return new ArtNetOutput(s);
-    }
-
-    public LedStrip getStrip() {
-        return strip;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
@@ -74,28 +57,25 @@ public final class ArtNetOutput extends AbstractOutput {
         int maxLeds = Math.min(ledCount, 170);
         byte[] dmx = new byte[512];
 
-        double angleRad = Math.toRadians(strip.getAngleDegrees());
-        double cosA = Math.cos(angleRad);
-        double sinA = Math.sin(angleRad);
-        double spacing = strip.getLedSpacingPixels();
-
-        for (int i = 0; i < maxLeds; i++) {
-            double cx = strip.getStartX() + cosA * spacing * i;
-            double cy = strip.getStartY() + sinA * spacing * i;
+        int index = 0;
+        for (Pixel pixel : strip.getPixels()) {
+            if (index >= maxLeds)
+                break;
+            int x = pixel.x();
+            int y = pixel.y();
             // Fetch a single pixel: 1×1 region at (cx, cy)
-            byte[] px = fetcher.getData((int) Math.round(cx), (int) Math.round(cy));
-            int base = i * 4;
+            byte[] px = fetcher.getData(x, y);
+            int base = index * 4;
 
             dmx[base] = px[1]; // G
             dmx[base + 1] = px[0]; // R
             dmx[base + 2] = px[2]; // B
             dmx[base + 3] = px[3]; // W
-
+            pixel.setRed(px[0] & 0xFF);
+            pixel.setGreen(px[1] & 0xFF);
+            pixel.setBlue(px[2] & 0xFF);
+            index++;
         }
-
-//        for (int i = 0; i < 512; i++) {
-//            dmx[i] = (byte) 255;
-//        }
 
         artNetClient.unicastDmx(
                 strip.getRemoteIp(),

@@ -7,7 +7,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -21,7 +20,6 @@ import java.util.function.Consumer;
 public class StripConfigPanel extends JFrame {
 
     private final LedStripConfig config;
-    private final List<LedStrip> strips;
     private final StripTableModel tableModel;
     private final JTable table;
     private Consumer<List<LedStrip>> onStripsChanged = ignored -> {
@@ -30,8 +28,7 @@ public class StripConfigPanel extends JFrame {
     public StripConfigPanel(LedStripConfig config) {
         super("LED Strip Configuration");
         this.config = config;
-        this.strips = new ArrayList<>(config.load());
-        this.tableModel = new StripTableModel(strips);
+        this.tableModel = new StripTableModel(config.getStrips());
         this.table = new JTable(tableModel);
 
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -69,13 +66,6 @@ public class StripConfigPanel extends JFrame {
         this.onStripsChanged = listener;
     }
 
-    /**
-     * Returns a defensive copy of the current strip list.
-     */
-    public List<LedStrip> getStrips() {
-        return new ArrayList<>(strips);
-    }
-
     private void buildUi() {
         JPanel root = new JPanel(new BorderLayout(4, 4));
         root.setBorder(new EmptyBorder(8, 8, 8, 8));
@@ -100,18 +90,18 @@ public class StripConfigPanel extends JFrame {
         editBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0)
-                openEditor(strips.get(row));
+                openEditor(config.getStrips().get(row));
         });
         deleteBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
-                strips.remove(row);
+                config.getStrips().remove(row);
                 tableModel.fireTableRowsDeleted(row, row);
                 notifyChanged();
             }
         });
         saveBtn.addActionListener(e -> {
-            config.save(strips);
+            config.save();
             JOptionPane.showMessageDialog(this, "Strip configuration saved.");
         });
 
@@ -124,10 +114,10 @@ public class StripConfigPanel extends JFrame {
         dialog.setVisible(true);
         if (dialog.isConfirmed()) {
             if (existing == null) {
-                strips.add(copy);
-                tableModel.fireTableRowsInserted(strips.size() - 1, strips.size() - 1);
+                config.getStrips().add(copy);
+                tableModel.fireTableRowsInserted(config.getStrips().size() - 1, config.getStrips().size() - 1);
             } else {
-                int idx = strips.indexOf(existing);
+                int idx = config.getStrips().indexOf(existing);
                 applyTo(copy, existing);
                 tableModel.fireTableRowsUpdated(idx, idx);
             }
@@ -136,7 +126,7 @@ public class StripConfigPanel extends JFrame {
     }
 
     private void notifyChanged() {
-        onStripsChanged.accept(getStrips());
+        onStripsChanged.accept(config.getStrips());
     }
 
     // ---- inner classes ----

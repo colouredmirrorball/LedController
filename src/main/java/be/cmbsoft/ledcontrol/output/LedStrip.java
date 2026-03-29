@@ -1,6 +1,10 @@
 package be.cmbsoft.ledcontrol.output;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Describes a single LED strip placed in the canvas.
@@ -57,6 +61,9 @@ public class LedStrip {
     private int subnet = 0;
     @JsonProperty
     private int universe = 0;
+
+    @JsonIgnore
+    private final List<Pixel> pixels = new ArrayList<>();
 
     // ---- constructors ----
 
@@ -166,6 +173,25 @@ public class LedStrip {
     @Override
     public String toString() {
         return name + " (" + ledCount + " LEDs, universe " + universe + ")";
+    }
+
+    @JsonIgnore
+    public List<Pixel> getPixels() {
+        return pixels;
+    }
+
+    @JsonIgnore
+    public void updatePixelPositions() {
+        double angleRad = Math.toRadians(angleDegrees);
+        double cosA = Math.cos(angleRad);
+        double sinA = Math.sin(angleRad);
+        double spacing = getLedSpacingPixels();
+        for (int i = 0; i < ledCount; i++) {
+            int sx = (int) (startX + cosA * spacing * i);
+            int sy = (int) (startY + sinA * spacing * i);
+            pixels.add(new Pixel(sx, sy, 0, 0, 0));
+        }
+
     }
 }
 
