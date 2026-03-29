@@ -109,7 +109,7 @@ public class StripConfigPanel extends JFrame {
     }
 
     private void openEditor(LedStrip existing) {
-        LedStrip copy = existing == null ? new LedStrip() : copyOf(existing);
+        LedStrip copy = existing == null ? newDefaultStrip() : copyOf(existing);
         StripEditorDialog dialog = new StripEditorDialog(this, copy);
         dialog.setVisible(true);
         if (dialog.isConfirmed()) {
@@ -123,6 +123,22 @@ public class StripConfigPanel extends JFrame {
             }
             notifyChanged();
         }
+    }
+
+    private LedStrip newDefaultStrip() {
+        LedStrip newStrip = new LedStrip();
+        List<LedStrip> strips = config.getStrips();
+        if (!strips.isEmpty()) {
+            LedStrip lastStrip = strips.get(strips.size() - 1);
+            newStrip.setName(lastStrip.getName());
+            newStrip.setStartX(lastStrip.getStartX() + 20);
+            newStrip.setStartY(lastStrip.getStartY() + 20);
+            newStrip.setRemoteIp(lastStrip.getRemoteIp());
+            newStrip.setRemotePort(lastStrip.getRemotePort());
+            newStrip.setSubnet(lastStrip.getSubnet());
+            newStrip.setUniverse(lastStrip.getUniverse() + 1);
+        }
+        return newStrip;
     }
 
     private void notifyChanged() {

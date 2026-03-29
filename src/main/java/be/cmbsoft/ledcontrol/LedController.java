@@ -253,7 +253,7 @@ public class LedController extends PApplet implements OSCMessageListener {
                 // Check start handle
                 float sx = stripToScreenX(strip.getStartX());
                 float sy = stripToScreenY(strip.getStartY());
-                if (Math.abs(mouseX - sx) <= HANDLE_HALF && Math.abs(mouseY - sy) <= HANDLE_HALF) {
+                if (mouseOver(sx, sy)) {
                     dragStripIndex = i;
                     dragHandle = 0;
                     return;
@@ -263,13 +263,17 @@ public class LedController extends PApplet implements OSCMessageListener {
                 double[] end = stripEndPosition(strip);
                 float ex = stripToScreenX(end[0]);
                 float ey = stripToScreenY(end[1]);
-                if (Math.abs(mouseX - ex) <= HANDLE_HALF && Math.abs(mouseY - ey) <= HANDLE_HALF) {
+                if (mouseOver(ex, ey)) {
                     dragStripIndex = i;
                     dragHandle = 1;
                     return;
                 }
             }
         }
+    }
+
+    private boolean mouseOver(float sx, float sy) {
+        return Math.abs(mouseX - sx) <= HANDLE_HALF && Math.abs(mouseY - sy) <= HANDLE_HALF;
     }
 
     @Override
