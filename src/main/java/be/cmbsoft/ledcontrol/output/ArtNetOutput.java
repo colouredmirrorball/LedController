@@ -83,4 +83,11 @@ public final class ArtNetOutput extends AbstractOutput {
                 strip.getUniverse(),
                 dmx);
     }
+
+    @Override
+    public void stop() {
+        if (artNetClient != null) {
+            artNetClient.stop();
+        }
+    }
 }

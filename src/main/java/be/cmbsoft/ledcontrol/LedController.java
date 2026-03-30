@@ -135,6 +135,9 @@ public class LedController extends PApplet implements OSCMessageListener {
      * Replaces the current outputs with fresh {@link ArtNetOutput} instances.
      */
     private synchronized void rebuildOutputs(List<LedStrip> strips) {
+        for (AbstractOutput output : outputs) {
+            output.stop();
+        }
         outputs.clear();
         for (LedStrip strip : strips) {
             outputs.add(new ArtNetOutput(strip));
@@ -144,16 +147,20 @@ public class LedController extends PApplet implements OSCMessageListener {
 
     @Override
     public void draw() {
-        background(50);
-        matrix.beginDraw();
-        activeInput.drawGraphics(matrix, this);
-        matrix.endDraw();
+        try {
+            background(50);
+            matrix.beginDraw();
+            activeInput.drawGraphics(matrix, this);
+            matrix.endDraw();
 
-        matrix.loadPixels();
-        image(matrix, canvasX, canvasY, outputWidth, outputHeight);
+            matrix.loadPixels();
+            image(matrix, canvasX, canvasY, outputWidth, outputHeight);
 
-        drawStripOverlays();
-        processOutputs();
+            drawStripOverlays();
+            processOutputs();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -390,6 +397,9 @@ public class LedController extends PApplet implements OSCMessageListener {
     public void exit() {
         if (port != null) {
             port.stopListening();
+        }
+        for (AbstractOutput output : outputs) {
+            output.stop();
         }
         super.exit();
     }

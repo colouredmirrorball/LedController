@@ -35,6 +35,11 @@ public class PixelPusherOutput extends AbstractOutput {
         }
     }
 
+    @Override
+    public void stop() {
+        registry.stopPushing();
+    }
+
     static class TestObserver implements Observer {
         private boolean hasStrips = false;
 

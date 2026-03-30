@@ -137,6 +137,8 @@ public class StripConfigPanel extends JFrame {
             newStrip.setRemotePort(lastStrip.getRemotePort());
             newStrip.setSubnet(lastStrip.getSubnet());
             newStrip.setUniverse(lastStrip.getUniverse() + 1);
+            newStrip.setLedCount(lastStrip.getLedCount());
+            newStrip.setLedSpacingPixels(lastStrip.getLedSpacingPixels());
         }
         return newStrip;
     }
