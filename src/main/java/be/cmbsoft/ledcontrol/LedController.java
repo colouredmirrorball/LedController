@@ -1,10 +1,25 @@
 package be.cmbsoft.ledcontrol;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import javax.swing.SwingUtilities;
+
 import be.cmbsoft.ledcontrol.input.Blackout;
 import be.cmbsoft.ledcontrol.input.Input;
 import be.cmbsoft.ledcontrol.input.ScreenGrabber;
 import be.cmbsoft.ledcontrol.input.StaticColour;
-import be.cmbsoft.ledcontrol.output.*;
+import be.cmbsoft.ledcontrol.output.AbstractOutput;
+import be.cmbsoft.ledcontrol.output.ArtNetOutput;
+import be.cmbsoft.ledcontrol.output.LedStrip;
+import be.cmbsoft.ledcontrol.output.LedStripConfig;
+import be.cmbsoft.ledcontrol.output.Pixel;
 import be.cmbsoft.ledcontrol.ui.StripConfigPanel;
 import com.illposed.osc.MessageSelector;
 import com.illposed.osc.OSCMessage;
@@ -14,13 +29,6 @@ import com.illposed.osc.transport.OSCPortIn;
 import com.illposed.osc.transport.OSCPortInBuilder;
 import processing.core.PApplet;
 import processing.core.PGraphics;
-
-import javax.swing.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 
 public class LedController extends PApplet implements OSCMessageListener {
 
@@ -47,10 +55,8 @@ public class LedController extends PApplet implements OSCMessageListener {
      * Half-size of the draggable handle rectangles in screen pixels.
      */
     private static final int HANDLE_HALF = 6;
-    private final int canvasX = 50;
-
-    // ---- edit-mode drag state ----
-    private final int canvasY = 50;
+    private static final int CANVAS_X = 50;
+    private static final int CANVAS_Y = 50;
     /**
      * Index of the strip whose handle is being dragged, or -1.
      */
@@ -154,7 +160,7 @@ public class LedController extends PApplet implements OSCMessageListener {
             matrix.endDraw();
 
             matrix.loadPixels();
-            image(matrix, canvasX, canvasY, outputWidth, outputHeight);
+            image(matrix, CANVAS_X, CANVAS_Y, outputWidth, outputHeight);
 
             drawStripOverlays();
             processOutputs();
@@ -191,8 +197,8 @@ public class LedController extends PApplet implements OSCMessageListener {
         for (LedStrip strip : strips) {
             for (Pixel pixel : strip.getPixels()) {
                 fill(color(pixel.red(), pixel.green(), pixel.blue()));
-                rect(map(pixel.x(), 0, outputWidth, canvasX, canvasX + outputWidth),
-                        map(pixel.y(), 0, outputHeight, canvasY, canvasY + outputHeight), 6, 6);
+                rect(map(pixel.x(), 0, outputWidth, CANVAS_X, CANVAS_X + outputWidth),
+                    map(pixel.y(), 0, outputHeight, CANVAS_Y, CANVAS_Y + outputHeight), 6, 6);
             }
             if (editMode) {
                 // Compute screen-space positions of the start and end handles
@@ -226,28 +232,28 @@ public class LedController extends PApplet implements OSCMessageListener {
      * Maps a strip canvas X coordinate to a Processing screen X coordinate.
      */
     private float stripToScreenX(double canvasCoord) {
-        return map((float) canvasCoord, 0, outputWidth, canvasX, canvasX + (float) outputWidth);
+        return map((float) canvasCoord, 0, outputWidth, CANVAS_X, CANVAS_X + (float) outputWidth);
     }
 
     /**
      * Maps a strip canvas Y coordinate to a Processing screen Y coordinate.
      */
     private float stripToScreenY(double canvasCoord) {
-        return map((float) canvasCoord, 0, outputHeight, canvasY, canvasY + (float) outputHeight);
+        return map((float) canvasCoord, 0, outputHeight, CANVAS_Y, CANVAS_Y + (float) outputHeight);
     }
 
     /**
      * Maps a Processing screen X to a strip canvas X coordinate.
      */
     private double screenToStripX(float screenX) {
-        return map(screenX, canvasX, canvasX + (float) outputWidth, 0, outputWidth);
+        return map(screenX, CANVAS_X, CANVAS_X + (float) outputWidth, 0, outputWidth);
     }
 
     /**
      * Maps a Processing screen Y to a strip canvas Y coordinate.
      */
     private double screenToStripY(float screenY) {
-        return map(screenY, canvasY, canvasY + (float) outputHeight, 0, outputHeight);
+        return map(screenY, CANVAS_Y, CANVAS_Y + (float) outputHeight, 0, outputHeight);
     }
 
     @Override
