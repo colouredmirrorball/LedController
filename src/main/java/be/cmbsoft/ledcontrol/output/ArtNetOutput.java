@@ -15,12 +15,10 @@ import java.util.Objects;
 public final class ArtNetOutput extends AbstractOutput {
 
     private final LedStrip strip;
-    private final ArtNetClient artNetClient;
+    private static ArtNetClient artNetClient;
 
     public ArtNetOutput(LedStrip strip) {
         this.strip = strip;
-        artNetClient = new ArtNetClient();
-        artNetClient.start();
     }
 
     @Override
@@ -52,6 +50,16 @@ public final class ArtNetOutput extends AbstractOutput {
      */
     @Override
     public void send(LedController.PixelFetcher fetcher) {
+        if (artNetClient == null) {
+            artNetClient = new ArtNetClient();
+            artNetClient.start();
+        }
+        if (!artNetClient.isRunning()) {
+            artNetClient.stop();
+            artNetClient = new ArtNetClient();
+            artNetClient.start();
+        }
+
         int ledCount = strip.getLedCount();
         // Max 170 RGB LEDs per DMX universe (510 bytes)
         int maxLeds = Math.min(ledCount, 170);
